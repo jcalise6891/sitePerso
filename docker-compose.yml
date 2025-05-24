@@ -1,0 +1,85 @@
+services:
+  # --- Laravel App (PHP) ---
+  app:
+    build:
+      context: ./docker/php
+    container_name: laravel-app
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    networks:
+      - web
+    depends_on:
+      - mysql
+    environment:
+      - MAIL_HOST=mail
+    labels:
+      - traefik.enable=false
+
+  # --- Nginx Proxy ---
+  web:
+    image: nginx:alpine
+    container_name: laravel-web
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - .:/var/www/html
+    networks:
+      - web
+    depends_on:
+      - app
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.laravel.rule=Host(`jcalise.fr`)
+      - traefik.http.services.laravel.loadbalancer.server.port=80
+      - traefik.http.routers.laravel.entrypoints=web
+
+  # --- MySQL ---
+  mysql:
+    image: mysql:8
+    container_name: laravel-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - web
+
+  # --- Mailhog ---
+  mail:
+    image: mailhog/mailhog
+    container_name: laravel-mailhog
+    ports:
+      - "8025:8025" # UI
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.mail.rule=Host(`mail.jcalise.fr`)
+      - traefik.http.routers.mail.entrypoints=web
+      - traefik.http.services.mail.loadbalancer.server.port=8025
+
+  # --- Traefik ---
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --entrypoints.web.address=:80
+    ports:
+      - "80:80"
+      - "8080:8080" # Dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/traefik/traefik.yml:/etc/traefik/traefik.yml
+    networks:
+      - web
+
+networks:
+  web:
+
+volumes:
+  dbdata:
