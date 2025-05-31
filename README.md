@@ -218,8 +218,8 @@ docker-compose up -d --build --force-recreate
 ### Base de Données
 - **Host** : `mysql` (nom du service Docker)
 - **Database** : `laravel`
-- **User** : `laravel`
-- **Password** : `secret`
+- **User** : XXX
+- **Password** : XXX
 
 ## 🤝 Contribution
 
