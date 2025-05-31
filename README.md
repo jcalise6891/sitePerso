@@ -237,7 +237,7 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 **JCalise**
 - Site : [jcalise.fr](https://jcalise.fr)
-- GitHub : [@JCalise](https://github.com/JCalise)
+- GitHub : [@jcalise6891](https://github.com/jcalise6891)
 
 ---
 
